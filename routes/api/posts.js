@@ -19,19 +19,81 @@ router.post(
     if (!errors.isEmpty()) {
       return res.status(400).json({ errors: errors.array() });
     }
+    try {
+      const user = await User.findById({ _id: req.user.id }).select(
+        '-password'
+      );
+      const newPost = new Post({
+        text: req.body.text,
+        name: user.name,
+        avatar: user.avatar,
+        user: req.user.id,
+      });
 
-    const user = await User.findById({ _id: req.user.id }).select('-password');
-
-    const newPost = new Post({
-      text: req.body.text,
-      name: user.name,
-      avatar: user.avatar,
-      user: req.user.id,
-    });
-
-    const post = await newPost.save();
-    res.json(post);
+      const post = await newPost.save();
+      res.json(post);
+    } catch (err) {
+      console.error(err.message);
+      res.status(500).send('Server error');
+    }
   }
 );
+
+// @route  GET api/posts/
+// @desc   Get allposts
+// @access Private
+router.get('/', authMiddleware, async (req, res) => {
+  try {
+    const posts = await Post.find().sort({ date: -1 });
+    res.json(posts);
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).send('Server error');
+  }
+});
+
+// @route  GET api/posts/:post_id
+// @desc   Get post by ID
+// @access Private
+router.get('/:post_id', authMiddleware, async (req, res) => {
+  try {
+    const post = await Post.findById(req.params.post_id);
+    if (!post) {
+      return res.status(404).json({ msg: 'No post found' });
+    }
+    res.json(post);
+  } catch (err) {
+    if (err.kind === undefined) {
+      return res.status(404).json({ msg: 'No post found' });
+    }
+    console.error(err.kind);
+    res.status(500).send('Server error');
+  }
+});
+
+// @route  DELETE api/posts/:post_id
+// @desc   Delete post by ID
+// @access Private
+router.delete('/:post_id', authMiddleware, async (req, res) => {
+  try {
+    const post = await Post.findById(req.params.post_id);
+
+    if (!post) {
+      return res.status(404).json({ msg: 'No post found' });
+    }
+
+    if (post.user.toString() !== req.user.id) {
+      return res.status(401).json({ msg: 'User not authorized' });
+    }
+    await post.remove();
+    res.json({ msg: 'Post Removed' });
+  } catch (err) {
+    if (err.kind === undefined) {
+      return res.status(404).json({ msg: 'No post found' });
+    }
+    console.error(err.kind);
+    res.status(500).send('Server error');
+  }
+});
 
 module.exports = router;
