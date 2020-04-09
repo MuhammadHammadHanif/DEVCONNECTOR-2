@@ -7,7 +7,7 @@ const bycrypt = require('bcryptjs');
 const router = express.Router();
 const authMiddleware = require('../../middleware/auth');
 
-// User Moddel
+// User Model
 const User = require('../../models/User');
 
 // @route  GET api/auth
