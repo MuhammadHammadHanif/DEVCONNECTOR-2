@@ -49,7 +49,7 @@ export const getProfiles = () => async (dispatch) => {
 // Get profile bi ID
 export const getProfileById = (userId) => async (dispatch) => {
   try {
-    const res = await axios.get(`api/profile/user/${userId}`);
+    const res = await axios.get(`/api/profile/user/${userId}`);
     dispatch({
       type: GET_PROFILE,
       payload: res.data,
@@ -65,7 +65,7 @@ export const getProfileById = (userId) => async (dispatch) => {
 // Get github repos
 export const getGithubRepos = (username) => async (dispatch) => {
   try {
-    const res = await axios.get(`api/profile/github/${username}`);
+    const res = await axios.get(`/api/profile/github/${username}`);
     dispatch({
       type: GET_REPOS,
       payload: res.data,
@@ -89,7 +89,7 @@ export const createProfile = (formData, history, edit = false) => async (
       },
     };
 
-    const res = await axios.post('api/profile', formData, config);
+    const res = await axios.post('/api/profile', formData, config);
     dispatch({
       type: GET_PROFILE,
       payload: res.data,
